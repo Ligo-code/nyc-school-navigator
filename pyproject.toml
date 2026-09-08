@@ -1,10 +1,10 @@
 [project]
 name = "nyc-school-navigator"
 version = "0.1.0"
-description = "Add your description here"
+description = "AI-powered NYC school discovery and comparison assistant"
 readme = "README.md"
 authors = [
-    { name = "Kseniia Zakharova", email = "niya.zakharova@gmail.com" }
+    { name = "Niya Zakharova"}
 ]
 requires-python = ">=3.12"
 dependencies = [
