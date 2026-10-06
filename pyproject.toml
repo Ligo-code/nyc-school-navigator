@@ -12,6 +12,7 @@ dependencies = [
     "langchain>=1.4.0",
     "langchain-openai>=1.6.1",
     "langgraph>=1.2.11",
+    "openpyxl>=3.1.5",
     "pydantic-settings>=2.15.0",
     "pymongo>=4.18.0",
     "python-dotenv>=1.2.3",

@@ -1,0 +1,54 @@
+{
+  "schools": [
+    {
+      "dbn": "20K187",
+      "name": "The Christa McAuliffe School / I.S. 187",
+      "sources": [
+        {
+          "type": "myschools_profile",
+          "url": "https://www.myschools.nyc/en/schools/middle-school/20K187/"
+        },
+        {
+          "type": "school_quality",
+          "dataset": "Elementary and Middle School Quality Reports"
+        }
+      ]
+    },
+    {
+      "dbn": "21K228",
+      "name": "I.S. 228 David A. Boody",
+      "sources": [
+        {
+          "type": "myschools_profile",
+          "url": "https://www.myschools.nyc/en/schools/middle-school/11398/"
+        },
+        {
+          "type": "school_quality",
+          "dataset": "Elementary and Middle School Quality Reports"
+        }
+      ]
+    },
+    {
+      "dbn": "21K239",
+      "name": "Mark Twain I.S. 239 for the Gifted & Talented",
+      "sources": [
+        {
+          "type": "myschools_profile",
+          "url": "https://www.myschools.nyc/en/schools/middle-school/?dbn=21K239"
+        },
+        {
+          "type": "school_quality",
+          "dataset": "Elementary and Middle School Quality Reports"
+        }
+      ]
+    }
+  ],
+  "shared_sources": [
+    {
+      "type": "admissions_policy",
+      "title": "NYCPS Middle School Admissions",
+      "url": "https://www.schools.nyc.gov/enrollment/enroll-grade-by-grade/middle-school",
+      "admissions_cycle": "fall_2027"
+    }
+  ]
+}

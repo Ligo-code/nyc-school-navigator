@@ -1,149 +1,95 @@
 # NYC School Navigator
 
-An AI-powered assistant designed to help families find and understand information from official New York City Public Schools resources.
+An AI-powered RAG assistant for answering focused questions using official New York City Public Schools documentation.
 
 ## Project Overview
 
-New York City families often need to navigate large amounts of school-related information across guides, policies, and other official resources. Finding an answer to a specific question may require searching through multiple documents and understanding unfamiliar terminology.
+NYC School Navigator is a small Retrieval-Augmented Generation (RAG) project designed to explore how reliably an AI system can retrieve and use information from official NYC Public Schools resources.
 
-**NYC School Navigator** will use Retrieval-Augmented Generation (RAG) to help users ask questions in natural language and receive answers grounded in official school documentation.
+The project intentionally starts with a **very small and controlled scope**.
 
-In addition to the user-facing assistant, the project will include a simple evaluation and debugging layer to make the RAG pipeline more transparent and help identify retrieval problems.
+Rather than attempting to cover the entire NYC school system, the first version will focus on **one narrow topic and a small set of official source documents**. This makes it possible to inspect the full RAG pipeline, understand retrieval failures, and establish a meaningful evaluation baseline before expanding the system.
+
+The initial goal is not to build a comprehensive school information platform. It is to build a small end-to-end RAG system whose behavior can be understood and measured.
 
 ## Problem Statement
 
-Important information about public schools is available online, but it can be distributed across long documents and multiple resources.
+Official NYC Public Schools information is often contained in long guides, policy documents, and other resources.
 
-Parents and caregivers may have questions such as:
+Even when the correct information exists in a document, finding the relevant section can require searching through many pages and understanding unfamiliar terminology.
 
-* How can I request a special education evaluation for my child?
-* What language assistance is available to families?
-* How does middle or high school admission work?
-* Where can I find information about services for students with disabilities?
-* What rights do parents have during the special education process?
+A RAG system can help users ask questions in natural language and retrieve relevant information from these documents.
 
-Instead of manually searching through multiple documents, users should be able to ask a question and receive a concise answer supported by relevant official sources.
+However, producing a plausible answer is not enough.
 
-## Proposed Solution
+The project will also examine an important question:
 
-The application will:
+> Did the system retrieve the information needed to answer the user's question?
 
-1. Collect a small set of publicly available NYC Public Schools documents.
-2. Extract and split the documents into searchable text chunks.
-3. Generate embeddings for those chunks.
-4. Store the chunks, embeddings, and source metadata in MongoDB Atlas.
-5. Use MongoDB Atlas Vector Search to retrieve relevant information for a user's question.
-6. Send the retrieved context to an open-source LLM.
-7. Generate an answer grounded in the retrieved documents.
-8. Display the answer together with its source information.
+This makes retrieval quality a central part of the project.
 
-The project will also expose retrieval information for debugging and evaluation.
+## MVP Scope
 
-## Target Users
+The first version of NYC School Navigator will deliberately remain small.
 
-The primary users are parents and caregivers navigating the NYC public school system.
+The MVP will:
 
-The initial prototype will focus on a limited set of topics covered by the selected documents rather than attempting to answer every possible question about NYC schools.
+1. Select a narrow NYC Public Schools topic.
+2. Collect a small number of official documents relevant to that topic.
+3. Extract and inspect their text.
+4. Split the documents into searchable chunks.
+5. Generate embeddings for those chunks.
+6. Store the chunks, embeddings, and metadata in MongoDB Atlas.
+7. Retrieve relevant chunks using MongoDB Atlas Vector Search.
+8. Pass the retrieved context to an LLM.
+9. Generate an answer grounded in the retrieved information.
+10. Return source information with the answer.
+11. Evaluate whether retrieval returned the expected source material.
 
-## Planned Features
+The scope can be expanded only after this basic pipeline works reliably.
 
-### School Information Assistant
+## Data Collection
 
-Users will be able to enter a school-related question and receive an AI-generated answer based on the available official documentation.
+For the initial MVP, source documents will be selected manually from official NYC Public Schools resources.
 
-### Source-Grounded Answers
+Because the dataset is intentionally small, the first version does **not** require a general-purpose web scraper.
 
-Answers will include source information so users can identify which document was used.
+Where official documents are available as downloadable files, they can be downloaded and processed directly. This keeps ingestion simple and makes it easier to inspect exactly what information enters the knowledge base.
 
-When the retrieved information is insufficient, the application should avoid inventing an answer.
+More automated collection or scraping can be added later if the project grows beyond the initial dataset.
 
-### Semantic Retrieval
+## Evaluation Dataset
 
-The system will use vector embeddings and MongoDB Atlas Vector Search to retrieve document sections based on semantic similarity rather than relying only on keyword matching.
+The evaluation dataset will be created separately from the RAG knowledge base.
 
-### Retrieval Debug View
+Instead of automatically generating evaluation questions from the source documents with an LLM, the initial questions will be **manually curated**.
 
-A developer/debug view will expose information such as:
+This is intentional.
 
-* retrieved document chunks
-* source document and page
-* retrieval ranking
-* similarity/relevance information
-* retrieval configuration
+For a small MVP, manually written questions make it easier to control what is being tested and avoid creating evaluation questions that simply mirror the wording or structure of the source documents.
 
-This will help identify whether an incorrect answer originated from retrieval or from answer generation.
+Each evaluation case can contain information such as:
 
-### RAG Evaluation
-
-A small evaluation dataset will be created using realistic questions based on publicly available school FAQs and documentation.
-
-The project will use this dataset to evaluate whether the RAG system retrieves the expected source material.
-
-Possible experiments include comparing:
-
-* different chunk sizes
-* different chunk overlap
-* different `top_k` values
-* retrieval configurations
-
-The goal is not only to build a RAG application, but also to measure and improve how reliably it retrieves relevant information.
-
-## Planned Technology Stack
-
-| Component                  | Technology                         |
-| -------------------------- | ---------------------------------- |
-| Programming Language       | Python                             |
-| User Interface             | Streamlit                          |
-| LLM Framework              | LangChain                          |
-| LLM                        | Open-source model, final model TBD |
-| Embeddings                 | SentenceTransformers               |
-| Database                   | MongoDB Atlas                      |
-| Retrieval                  | MongoDB Atlas Vector Search        |
-| Document Processing        | pypdf / LangChain document loaders |
-| Observability & Evaluation | Langfuse                           |
-
-The final open-source LLM will be selected after testing models that can run within the project's free-resource requirements.
-
-## Data Sources
-
-The knowledge base will contain a small collection of publicly available documents from official NYC Public Schools resources.
-
-Potential topics include:
-
-* special education
-* parent rights
-* language access
-* school admissions
-* services for students with disabilities
-* resources for families
-
-Approximately **8–12 documents** are planned for the initial prototype.
-
-Each stored chunk will retain metadata such as:
-
-```text
-document title
-source
-page number
-category
-source URL
-chunk index
+```json
+{
+  "question": "How can a parent request an evaluation for their child?",
+  "expected_source": "source-document-name",
+  "category": "special_education"
+}
 ```
 
-This metadata will allow retrieved information to be connected back to its original source.
+The questions should represent realistic ways a parent or caregiver might ask for information.
 
-The evaluation questions will be kept separate from the documents used as the RAG knowledge base.
-
-## High-Level Architecture
+## RAG Pipeline
 
 ```text
 Official NYC Public Schools Documents
                 |
                 v
-        Document Processing
+        Text Extraction
                 |
                 v
-             Chunking
+            Chunking
                 |
                 v
      SentenceTransformer Embeddings
@@ -154,86 +100,212 @@ Official NYC Public Schools Documents
                 v
       Atlas Vector Search
                 |
-User Question -> Retrieval
+                v
+          User Question
+                |
+                v
+            Retrieval
                 |
                 v
         Retrieved Context
                 |
                 v
-        Open-Source LLM
+               LLM
                 |
                 v
       Grounded Answer + Sources
-                |
-                v
-           Streamlit UI
-
-
-        Observability / Evaluation
-                |
-                v
-             Langfuse
-        /                 \
-     Traces             Evaluation
 ```
 
-## Evaluation Approach
+## Retrieval Evaluation
 
-The project will include a small test set of realistic questions with expected source information.
+The first evaluation will focus primarily on **retrieval quality**.
+
+For each manually curated question, the system will check whether the expected source material appears among the retrieved results.
+
+Initial metrics may include:
+
+* whether the expected source was retrieved
+* rank of the expected source
+* Hit@K
+
+For example, if the expected information appears within the top 5 retrieved chunks, the evaluation case may count as a Hit@5.
+
+This creates a simple baseline that can later be used to compare retrieval configurations.
+
+## Retrieval Debugging
+
+The project will keep retrieval behavior visible rather than treating the RAG pipeline as a black box.
+
+For a query, debugging information may include:
+
+```text
+user question
+retrieved chunks
+source document
+page number
+chunk index
+retrieval rank
+similarity/relevance score
+top_k
+```
+
+This makes it possible to distinguish between different types of failures.
+
+For example:
+
+```text
+Question
+   |
+   v
+Was the relevant information retrieved?
+   |
+   +-- No  -> Retrieval / chunking / indexing problem
+   |
+   +-- Yes
+         |
+         v
+Was it available in the context sent to the LLM?
+         |
+         +-- No  -> Ranking / context-selection problem
+         |
+         +-- Yes -> Generation / grounding problem
+```
+
+The initial MVP does not need to automate every failure category. The important part is preserving enough information to investigate failures.
+
+## Baseline First
+
+The first implementation will establish a simple baseline.
+
+The project will avoid prematurely optimizing:
+
+* chunk size
+* chunk overlap
+* `top_k`
+* ranking strategies
+* advanced retrieval techniques
+
+Once the baseline works and evaluation results are available, individual parameters can be changed and compared against the baseline.
+
+This keeps experiments measurable instead of changing several parts of the RAG pipeline at the same time.
+
+## Technology Stack
+
+| Component            | Technology                        |
+| -------------------- | --------------------------------- |
+| Programming Language | Python                            |
+| User Interface       | Streamlit                         |
+| RAG Framework        | LangChain                         |
+| LLM                  | Open-source model, TBD            |
+| Embeddings           | SentenceTransformers              |
+| Database             | MongoDB Atlas                     |
+| Retrieval            | MongoDB Atlas Vector Search       |
+| Document Processing  | Python / document loaders         |
+| Observability        | Langfuse                          |
+| Evaluation           | Small custom retrieval evaluation |
+
+The final open-source LLM will be selected later based on the project's resource constraints.
+
+## Document Metadata
+
+Each stored chunk will retain enough metadata to identify where it came from.
 
 For example:
 
 ```json
 {
-  "question": "How can a parent request an evaluation for their child?",
-  "expected_source": "Special Education Family Guide",
-  "category": "special_education"
+  "document_title": "...",
+  "source_url": "...",
+  "page": 12,
+  "category": "...",
+  "chunk_index": 7
 }
 ```
 
-The first version will establish a baseline retrieval configuration.
+This metadata will support both source attribution and retrieval debugging.
 
-Subsequent experiments can modify parameters such as chunk size and the number of retrieved chunks and compare their performance.
+## MVP Milestones
 
-Potential retrieval metrics include:
+### Phase 1 — Data
 
-* whether the expected source appears in the retrieved results
-* source rank
-* Hit@K
+* [ ] Select the initial topic
+* [ ] Select the initial official source documents
+* [ ] Download the source files
+* [ ] Inspect document structure
+* [ ] Extract text
+* [ ] Define document metadata
 
-Langfuse will be used to trace the RAG workflow and record information useful for analyzing retrieval and generation behavior.
+### Phase 2 — Retrieval
 
-## Project Scope
-
-The initial goal is a small, functional end-to-end prototype.
-
-### MVP
-
-* [ ] Collect official source documents
-* [ ] Extract document text
-* [ ] Implement chunking
+* [ ] Implement baseline chunking
 * [ ] Generate embeddings
-* [ ] Store documents and embeddings in MongoDB Atlas
+* [ ] Store chunks and embeddings in MongoDB Atlas
 * [ ] Configure Atlas Vector Search
 * [ ] Implement retrieval
+* [ ] Inspect retrieved chunks manually
+
+### Phase 3 — Evaluation
+
+* [ ] Create a small manually curated question set
+* [ ] Define expected source information
+* [ ] Run baseline retrieval evaluation
+* [ ] Record retrieval rank and Hit@K
+* [ ] Analyze failed cases
+
+### Phase 4 — Generation
+
 * [ ] Connect an open-source LLM
-* [ ] Build a simple Streamlit interface
-* [ ] Return answers with source information
+* [ ] Generate answers from retrieved context
+* [ ] Return source information
+* [ ] Handle insufficient retrieved context
+
+### Phase 5 — Interface and Observability
+
+* [ ] Add a minimal Streamlit interface
 * [ ] Add basic Langfuse tracing
-* [ ] Create a small evaluation dataset
-* [ ] Run a baseline retrieval evaluation
+* [ ] Expose useful retrieval/debug information
 
-### Possible Future Enhancements
+## Out of Scope for the Initial MVP
 
-* Compare different chunking strategies
-* Add automated retrieval experiments
-* Improve handling of questions with insufficient context
-* Add multilingual questions
-* Compare retrieval configurations
-* Add additional NYC Public Schools topics and documents
+The first version will **not** attempt to implement:
+
+* comprehensive coverage of NYC Public Schools resources
+* large-scale automated web scraping
+* LLM-generated evaluation datasets
+* complex retrieval optimization
+* automated hyperparameter experiments
+* multiple chunking strategies at once
+* multilingual support
+* advanced reranking
+* agentic retrieval
+* production-scale infrastructure
+
+These can be considered only after the baseline system is working and measurable.
+
+## Future Experiments
+
+Once the MVP is stable, the baseline can support controlled experiments such as:
+
+* different chunk sizes
+* different chunk overlap
+* different `top_k` values
+* alternative chunking strategies
+* reranking
+* additional documents
+* additional school-related topics
+* multilingual queries
+* improved insufficient-context handling
+
+Each experiment should change a limited part of the pipeline and compare the result with the existing baseline.
 
 ## Project Goal
 
-The goal of NYC School Navigator is to demonstrate how an open-source LLM can be combined with retrieval, vector search, prompt engineering, observability, and evaluation to build a useful AI application based on real-world public information.
+The goal of NYC School Navigator is to build a small, understandable RAG system based on real-world public information.
 
-Rather than evaluating the application only by whether an answer appears reasonable, the project will also examine **what information was retrieved and whether the correct source was available to the LLM when generating its answer**.
+The project is designed not only to answer questions, but also to make it possible to investigate **why a RAG system succeeds or fails**.
+
+The initial MVP therefore prioritizes:
+
+**small scope → transparent retrieval → measurable baseline → controlled improvement**
+
+rather than attempting to build a large feature-complete application immediately.
