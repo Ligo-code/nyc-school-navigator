@@ -32,7 +32,10 @@ def answer_question(
     """
     sections = retrieve_sections(question, top_k=top_k)
     sources = [
-        {"label": f"[{index}]", **section["metadata"], "score": section["score"]}
+        {
+            "label": f"[{index}]", **section["metadata"],
+            "score": section["score"], "evidence_text": section["content"],
+        }
         for index, section in enumerate(sections, start=1)
     ]
     if not sections:

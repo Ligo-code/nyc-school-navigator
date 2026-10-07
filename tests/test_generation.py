@@ -48,9 +48,35 @@ def test_grounded_request_and_structured_answer(monkeypatch, evidence):
     assert "Question: How many students?" in payload["messages"][1]["content"]
     assert result == {
         "question": "How many students?", "answer": "McAuliffe enrolled 954 students [1].",
-        "sources": [{"label": "[1]", **sections[0]["metadata"], "score": 0.8}],
+        "sources": [{
+            "label": "[1]", **sections[0]["metadata"], "score": 0.8,
+            "evidence_text": sections[0]["content"],
+        }],
     }
+    assert result["sources"][0]["evidence_text"] in payload["messages"][1]["content"]
     assert "embedding" not in json.dumps(result)
+
+
+def test_every_source_preserves_exact_context_without_extra_calls(monkeypatch, evidence):
+    sections, retrieve = evidence
+    sections[0]["content"] = "  School: McAuliffe\nEnrollment: 954\n\nSource year: 2024-25\n"
+    sections.append({
+        "content": "School: Mark Twain\nEnrollment: 1290\n",
+        "metadata": {**sections[0]["metadata"], "dbn": "21K239", "school_name": "Mark Twain"},
+        "score": 0.63,
+    })
+    network = mock_response(monkeypatch, {"message": {"content": "Answer [1] [2]."}})
+    result = generation.answer_question("Compare enrollment.")
+    retrieve.assert_called_once_with("Compare enrollment.", top_k=5)
+    network.assert_called_once()
+    prompt = json.loads(network.call_args.args[0].data)["messages"][1]["content"]
+    assert len(result["sources"]) == len(sections)
+    for index, (source, section) in enumerate(zip(result["sources"], sections), start=1):
+        assert source["label"] == f"[{index}]"
+        assert source["evidence_text"] == section["content"]
+        assert f'[{index}]\n{source["evidence_text"]}' in prompt
+        assert source["dbn"] == section["metadata"]["dbn"]
+        assert source["score"] == section["score"]
 
 
 def test_empty_context_skips_ollama(monkeypatch):
